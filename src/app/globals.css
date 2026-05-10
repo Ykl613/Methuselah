@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+@import url("https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css");
+
+* { box-sizing: border-box; }
+html, body { padding: 0; margin: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter Tight", system-ui, sans-serif;
+  background: #F2F2F7;
+  color: #1C1C1E;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.2px;
+}
+
+@layer components {
+  /* iOS-style buttons */
+  .btn {
+    @apply inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium transition-all;
+  }
+  .btn-primary {
+    @apply bg-accent text-white hover:bg-accent-hover active:scale-95;
+  }
+  .btn-secondary {
+    @apply bg-white text-text-primary border border-border hover:bg-bg-elevated active:scale-95;
+  }
+  .btn-success {
+    @apply bg-green text-white hover:opacity-90 active:scale-95;
+  }
+  .btn-danger {
+    @apply bg-red-soft text-red-text hover:bg-red/15 active:scale-95;
+  }
+
+  /* iOS-style inputs */
+  .input {
+    @apply w-full rounded-ios border border-border bg-white px-3.5 py-2.5 text-[14px] text-text-primary outline-none transition;
+  }
+  .input:focus {
+    @apply border-accent ring-2 ring-accent/15;
+  }
+  .label {
+    @apply block text-[12px] font-medium text-text-secondary mb-1.5;
+  }
+
+  /* iOS-style cards */
+  .card {
+    @apply bg-white rounded-ios-lg p-4 transition-all;
+  }
+  .card-hover {
+    @apply hover:shadow-sm cursor-pointer;
+  }
+  .panel {
+    @apply bg-white rounded-ios-lg overflow-hidden;
+  }
+
+  /* Stat cards (the 4 metric cards) */
+  .stat-card {
+    @apply bg-white rounded-ios-lg p-4 transition-all;
+  }
+  .stat-card-compact {
+    @apply bg-white rounded-ios p-3.5 transition-all;
+  }
+  .stat-card-icon {
+    @apply w-9 h-9 rounded-xl flex items-center justify-center mb-3;
+  }
+
+  /* Badges (status pills) */
+  .status-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-medium rounded-full;
+  }
+  .status-approved {
+    @apply bg-green-soft text-green-text;
+  }
+  .status-not-approved {
+    @apply bg-red-soft text-red-text;
+  }
+  .status-in-progress {
+    @apply bg-amber-soft text-amber-text;
+  }
+  .stage-tag {
+    @apply bg-accent-soft text-accent-strong px-2 py-0.5 rounded-full text-[10.5px] font-semibold tracking-wide;
+  }
+
+  /* Avatar circle */
+  .avatar {
+    @apply w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-semibold;
+  }
+  .avatar-sm {
+    @apply w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold;
+  }
+  .avatar-gradient {
+    background: linear-gradient(135deg, #5856D6, #AF52DE);
+    @apply text-white;
+  }
+
+  /* iOS-style table */
+  .ios-table {
+    @apply w-full;
+  }
+  .ios-table th {
+    @apply text-left px-4 py-3 text-[11px] text-text-muted font-medium uppercase tracking-wide;
+  }
+  .ios-table td {
+    @apply px-4 py-3 text-[14px];
+  }
+  .ios-table tr {
+    @apply border-b border-border last:border-0;
+  }
+  .ios-table tbody tr {
+    @apply hover:bg-bg-elevated transition-colors cursor-pointer;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #C7C7CC;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #8E8E93;
+}
