@@ -58,7 +58,10 @@ export function NotificationBell({ userId }: { userId: string }) {
     <div className="relative">
       <button onClick={handleOpen}
         className="relative w-10 h-10 bg-white border border-border rounded-ios hover:bg-bg-elevated flex items-center justify-center transition-all active:scale-95">
-        <i className="ti ti-bell text-[20px] text-text-primary" aria-hidden />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-primary" aria-hidden>
+          <path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" />
+          <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
+        </svg>
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red text-white text-[10px] font-bold rounded-full border-2 border-white min-w-[18px] h-[18px] flex items-center justify-center px-1 leading-none">
             {unreadCount}

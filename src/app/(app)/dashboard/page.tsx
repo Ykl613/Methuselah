@@ -3,28 +3,11 @@ import { createClient } from "@/lib/supabase-server";
 import Link from "next/link";
 import { NotificationBell } from "@/components/NotificationBell";
 import { StatusBadge } from "@/components/StatusBadge";
+import { GreetingHeader } from "@/components/GreetingHeader";
 
 // Re-render every 30 seconds at most. Reduces DB load dramatically.
 export const revalidate = 30;
 export const dynamic = "force-dynamic";
-
-function getGreeting(name: string): { greeting: string; emoji: string } {
-  const hour = new Date().getHours();
-  const firstName = (name || "").split(" ")[0] || "";
-  if (hour < 5) return { greeting: `Working late, ${firstName}`, emoji: "🌙" };
-  if (hour < 12) return { greeting: `Good morning, ${firstName}`, emoji: "👋" };
-  if (hour < 17) return { greeting: `Good afternoon, ${firstName}`, emoji: "☀️" };
-  if (hour < 21) return { greeting: `Good evening, ${firstName}`, emoji: "🌆" };
-  return { greeting: `Good evening, ${firstName}`, emoji: "🌙" };
-}
-
-function formatDate(): string {
-  return new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
-}
 
 export default async function Dashboard() {
   const user = await requireAdmin();
@@ -49,31 +32,27 @@ export default async function Dashboard() {
       .eq("status", "in_progress").order("updated_at", { ascending: false }).limit(10),
   ]);
 
-  const { greeting, emoji } = getGreeting(user.full_name);
   const taskCount = awaitingMe || 0;
 
   return (
     <div>
-      {/* Hero header with personalized greeting */}
+      {/* Hero header with personalized greeting and live clock */}
       <div className="flex justify-between items-start mb-7">
-        <div>
-          <p className="text-[12px] text-text-muted font-medium uppercase tracking-[1.2px]">{formatDate()}</p>
-          <h1 className="text-[28px] font-semibold tracking-[-0.6px] text-text-primary mt-1.5">
-            {greeting} <span className="text-[24px]">{emoji}</span>
-          </h1>
-          <p className="text-[14px] text-text-secondary mt-1.5">
-            {taskCount > 0 ? (
-              <>You have <span className="text-accent font-semibold">{taskCount} task{taskCount !== 1 ? 's' : ''}</span> awaiting your attention</>
-            ) : (
-              <>All caught up. Nice work! 🎉</>
-            )}
-          </p>
-        </div>
+        <GreetingHeader fullName={user.full_name} taskCount={taskCount} />
         <div className="flex gap-2.5 items-center">
           <NotificationBell userId={user.id} />
           <Link href="/in-progress" className="btn btn-primary">
             <i className="ti ti-progress" aria-hidden /> View In Progress
           </Link>
+          <form action="/api/logout" method="post">
+            <button type="submit" title="Sign out" className="w-10 h-10 bg-white border border-border rounded-ios hover:bg-red-soft hover:border-red/30 flex items-center justify-center transition-all active:scale-95 group">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-primary group-hover:text-red transition-colors" aria-hidden>
+                <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
+                <path d="M9 12h12l-3 -3" />
+                <path d="M18 15l3 -3" />
+              </svg>
+            </button>
+          </form>
         </div>
       </div>
 
