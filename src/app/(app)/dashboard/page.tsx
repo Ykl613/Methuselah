@@ -22,6 +22,7 @@ export default async function Dashboard() {
     { count: inProgress },
     { count: awaitingMe },
     { data: pendingSuppliers },
+    { data: openFollowUps },
   ] = await Promise.all([
     supabase.from("suppliers").select("*", { count: "exact", head: true }),
     supabase.from("suppliers").select("*", { count: "exact", head: true }).eq("status", "approved"),
@@ -31,6 +32,11 @@ export default async function Dashboard() {
       .eq("claimed_by", user.id).neq("status", "completed"),
     supabase.from("suppliers").select("id, reference_code, company_name, country, current_stage, status, updated_at")
       .eq("status", "in_progress").order("updated_at", { ascending: false }).limit(10),
+    supabase.from("supplier_follow_up_tasks")
+      .select("id, title, created_at, created_by_label, supplier_id, suppliers!inner(id, company_name, reference_code)")
+      .eq("status", "open")
+      .order("created_at", { ascending: false })
+      .limit(10),
   ]);
 
   const taskCount = awaitingMe || 0;
@@ -98,6 +104,48 @@ export default async function Dashboard() {
           </p>
         </Link>
       </div>
+
+      {/* Follow-up Tasks Panel (custom admin tasks for approved suppliers) */}
+      {openFollowUps && openFollowUps.length > 0 && (
+        <div className="panel mb-3.5 border border-red/20">
+          <div className="px-5 py-4 flex justify-between items-center border-b border-border bg-red-soft/30">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-red-soft flex items-center justify-center animate-pulse-strong">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red" aria-hidden>
+                  <path d="M5 7l5 5l-5 5" />
+                  <path d="M13 17l6 0" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-[17px] font-semibold tracking-[-0.3px]">Follow-ups</h2>
+                <p className="text-[12px] text-text-muted mt-0.5">{openFollowUps.length} open task{openFollowUps.length !== 1 ? "s" : ""} for approved suppliers</p>
+              </div>
+            </div>
+          </div>
+          <div className="divide-y divide-border">
+            {openFollowUps.map((task: any) => (
+              <Link
+                key={task.id}
+                href={`/suppliers/${task.supplier_id}`}
+                className="flex items-center gap-3 px-5 py-3 hover:bg-bg-elevated transition-colors group"
+              >
+                <div className="w-9 h-9 rounded-full bg-red-soft text-red-text flex items-center justify-center flex-shrink-0 font-semibold text-[13px]">
+                  {(task.suppliers?.company_name || task.suppliers?.reference_code || "?").charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-medium text-text-primary truncate">{task.title}</div>
+                  <div className="text-[11px] text-text-muted mt-0.5">
+                    {task.suppliers?.company_name || task.suppliers?.reference_code} · Added {new Date(task.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-subtle group-hover:text-text-muted" aria-hidden>
+                  <path d="M9 6l6 6l-6 6" />
+                </svg>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Pending tasks panel */}
       <div className="panel">

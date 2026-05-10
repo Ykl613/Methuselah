@@ -33,6 +33,7 @@ interface Supplier {
   country: string | null;
   status: "approved" | "in_progress" | "not_approved";
   approved_at: string | null;
+  open_follow_ups?: number;
 }
 
 // Custom debounce hook
@@ -224,14 +225,22 @@ export function SuppliersSearch({ initialSuppliers, initialCount }: { initialSup
               </tr>
             )}
             {suppliers.map((s) => (
-              <tr key={s.id}>
+              <tr key={s.id} className={s.open_follow_ups && s.open_follow_ups > 0 ? "bg-red-soft/30" : ""}>
                 <td>
                   <Link href={`/suppliers/${s.id}`} className="flex items-center gap-3 -m-1 p-1">
-                    <div className="avatar bg-green-soft text-green-text">
+                    <div className={`avatar ${s.open_follow_ups && s.open_follow_ups > 0 ? "bg-red-soft text-red-text animate-pulse-strong" : "bg-green-soft text-green-text"}`}>
                       {(s.company_name || s.reference_code).charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <div className="font-medium text-[14px] text-text-primary">{s.company_name || s.reference_code}</div>
+                      <div className="font-medium text-[14px] text-text-primary flex items-center gap-2">
+                        {s.company_name || s.reference_code}
+                        {s.open_follow_ups && s.open_follow_ups > 0 ? (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red text-white text-[10px] font-bold rounded-full animate-pulse-strong">
+                            <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping-dot" />
+                            {s.open_follow_ups} follow-up{s.open_follow_ups !== 1 ? "s" : ""}
+                          </span>
+                        ) : null}
+                      </div>
                       <div className="text-[12px] text-text-muted mt-0.5">{s.reference_code}</div>
                     </div>
                   </Link>

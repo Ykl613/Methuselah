@@ -6,6 +6,8 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { StatusBadge } from "@/components/StatusBadge";
 import { DeleteSupplierButton } from "@/components/DeleteSupplierButton";
 import { HeaderActions } from "@/components/HeaderActions";
+import { CopyableRow } from "@/components/CopyableRow";
+import { FollowUpTasksPanel } from "@/components/FollowUpTasksPanel";
 import { SupplierActions } from "./Actions";
 import { EvaluationForm } from "./EvaluationForm";
 import { NotesPanel } from "./NotesPanel";
@@ -46,6 +48,13 @@ export default async function SupplierDetail({ params }: { params: { id: string 
     (authData || []).forEach((u: any) => { authorsMap[u.id] = u.full_name; });
   }
   const notes = (notesRaw || []).map((n: any) => ({ ...n, author: { full_name: authorsMap[n.author_id] || "—" } }));
+
+  // Fetch follow-up tasks for this supplier (admin custom tasks like "call tomorrow")
+  const { data: followUpTasks } = await supabase
+    .from("supplier_follow_up_tasks")
+    .select("*")
+    .eq("supplier_id", supplier.id)
+    .order("created_at", { ascending: false });
 
   return (
     <div>
@@ -123,10 +132,10 @@ export default async function SupplierDetail({ params }: { params: { id: string 
               </span>
               <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium">Stage 1</span>
             </div>
-            <Row label="Contact" value={supplier.contact_name} />
-            <Row label="Email" value={supplier.email} mono />
-            <Row label="Phone" value={supplier.phone} mono />
-            <Row label="Company" value={supplier.company_name} />
+            <CopyableRow label="Contact" value={supplier.contact_name} />
+            <CopyableRow label="Email" value={supplier.email} mono />
+            <CopyableRow label="Phone" value={supplier.phone} mono />
+            <CopyableRow label="Company" value={supplier.company_name} />
           </div>
 
           {/* Stage 2 Form - Company Details */}
@@ -139,9 +148,9 @@ export default async function SupplierDetail({ params }: { params: { id: string 
                 </span>
                 <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium">Stage 2</span>
               </div>
-              <Row label="Business No." value={supplier.business_number} mono />
-              <Row label="Location" value={supplier.company_location} />
-              <Row label="Factory" value={supplier.factory_address} />
+              <CopyableRow label="Business No." value={supplier.business_number} mono />
+              <CopyableRow label="Location" value={supplier.company_location} />
+              <CopyableRow label="Factory" value={supplier.factory_address} />
             </div>
           )}
 
@@ -155,8 +164,8 @@ export default async function SupplierDetail({ params }: { params: { id: string 
                 </span>
                 <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium">Stage 3</span>
               </div>
-              <Row label="Product" value={supplier.product_type} />
-              <Row label="Capacity" value={supplier.production_quantity} />
+              <CopyableRow label="Product" value={supplier.product_type} />
+              <CopyableRow label="Capacity" value={supplier.production_quantity} />
             </div>
           )}
 
@@ -171,22 +180,16 @@ export default async function SupplierDetail({ params }: { params: { id: string 
               <span>Send the supplier the Stage 2 link to collect company details.</span>
             </div>
           )}
+
+          {/* Internal Evaluation - Admin fills manually, comes after Stage 3 */}
+          <EvaluationForm supplier={supplier} settings={settings} />
         </div>
 
         <div>
-          <EvaluationForm supplier={supplier} settings={settings} />
+          <FollowUpTasksPanel supplierId={supplier.id} tasks={followUpTasks || []} />
           <NotesPanel supplierId={supplier.id} notes={notes || []} />
         </div>
       </div>
-    </div>
-  );
-}
-
-function Row({ label, value, mono }: { label: string; value: string | null; mono?: boolean }) {
-  return (
-    <div className="flex py-1 text-xs">
-      <div className="w-28 text-text-muted">{label}</div>
-      <div className={`flex-1 font-medium ${mono ? "font-mono text-[11px]" : ""}`}>{value || "—"}</div>
     </div>
   );
 }
