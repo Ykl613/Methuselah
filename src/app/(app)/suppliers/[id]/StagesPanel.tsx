@@ -8,6 +8,20 @@ export function StagesPanel({ supplier, tasks, settings, userId, userRole }: any
   const router = useRouter();
   const [loadingStage, setLoadingStage] = useState<string | null>(null);
 
+  // APPROVED: Show only the success message, hide all stage details
+  if (supplier.status === "approved") {
+    return (
+      <div className="card border-green-soft shadow-[0_0_0_1px_#dcfce7]">
+        <div className="p-2 bg-green-soft border border-green-soft rounded-md text-sm text-green-text font-medium flex items-center gap-2.5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M5 12l5 5l10 -10" />
+          </svg>
+          Supplier has completed all 5 stages and is approved for ordering.
+        </div>
+      </div>
+    );
+  }
+
   if (supplier.current_stage === "form_1" || supplier.current_stage === "form_2" || supplier.current_stage === "form_3") {
     return (
       <div className="card border-accent-soft shadow-[0_0_0_1px_#eef0ff]">
@@ -101,12 +115,6 @@ export function StagesPanel({ supplier, tasks, settings, userId, userRole }: any
           );
         })}
       </div>
-
-      {supplier.status === "approved" && (
-        <div className="mt-3 p-3 bg-green-soft border border-green-soft rounded-md text-xs text-green-text font-medium flex items-center gap-2">
-          <i className="ti ti-circle-check text-base" aria-hidden /> Supplier has completed all 5 stages and is approved for ordering.
-        </div>
-      )}
     </div>
   );
 }

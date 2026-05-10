@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase-server";
-import { NotificationBell } from "@/components/NotificationBell";
+import { HeaderActions } from "@/components/HeaderActions";
 import { UsersTable } from "./UsersTable";
 
 export default async function Users() {
@@ -12,12 +12,10 @@ export default async function Users() {
     <div>
       <div className="flex justify-between items-center mb-5">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary mb-0.5">Users</h1>
-          <p className="text-xs text-text-muted">Manage system users and permissions</p>
+          <h1 className="text-[24px] font-semibold tracking-[-0.5px] text-text-primary mb-1">Users</h1>
+          <p className="text-[12px] text-text-muted">Manage system users and permissions</p>
         </div>
-        <div className="flex gap-2 items-center">
-          <NotificationBell userId={me.id} />
-        </div>
+        <HeaderActions userId={me.id} />
       </div>
 
       <UsersTable initialUsers={users || []} currentUserId={me.id} />

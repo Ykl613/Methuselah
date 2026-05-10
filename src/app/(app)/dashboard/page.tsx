@@ -4,6 +4,7 @@ import Link from "next/link";
 import { NotificationBell } from "@/components/NotificationBell";
 import { StatusBadge } from "@/components/StatusBadge";
 import { GreetingHeader } from "@/components/GreetingHeader";
+import { HeaderActions } from "@/components/HeaderActions";
 
 // Re-render every 30 seconds at most. Reduces DB load dramatically.
 export const revalidate = 30;
@@ -39,21 +40,7 @@ export default async function Dashboard() {
       {/* Hero header with personalized greeting and live clock */}
       <div className="flex justify-between items-start mb-7">
         <GreetingHeader fullName={user.full_name} taskCount={taskCount} />
-        <div className="flex gap-2.5 items-center">
-          <NotificationBell userId={user.id} />
-          <Link href="/in-progress" className="btn btn-primary">
-            <i className="ti ti-progress" aria-hidden /> View In Progress
-          </Link>
-          <form action="/api/logout" method="post">
-            <button type="submit" title="Sign out" className="w-10 h-10 bg-white border border-border rounded-ios hover:bg-red-soft hover:border-red/30 flex items-center justify-center transition-all active:scale-95 group">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-primary group-hover:text-red transition-colors" aria-hidden>
-                <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
-                <path d="M9 12h12l-3 -3" />
-                <path d="M18 15l3 -3" />
-              </svg>
-            </button>
-          </form>
-        </div>
+        <HeaderActions userId={user.id} />
       </div>
 
       {/* 4 stat cards in iOS style with colorful icons - compact */}
@@ -119,7 +106,7 @@ export default async function Dashboard() {
             <h2 className="text-[17px] font-semibold tracking-[-0.3px]">Pending tasks</h2>
             <p className="text-[12px] text-text-muted mt-0.5">In-progress suppliers · sorted by recent activity</p>
           </div>
-          <Link href="/tasks" className="btn btn-secondary text-[12px] py-1.5">
+          <Link href="/in-progress" className="btn btn-secondary text-[12px] py-1.5">
             View all <i className="ti ti-arrow-right text-[14px]" aria-hidden />
           </Link>
         </div>

@@ -130,3 +130,38 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #8E8E93;
 }
+
+/* Urgent task pulse animations */
+@keyframes pulse-strong {
+  0%, 100% {
+    background-color: rgb(252 235 235);
+    box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.4);
+  }
+  50% {
+    background-color: rgb(252 220 220);
+    box-shadow: 0 0 0 6px rgba(255, 59, 48, 0);
+  }
+}
+
+.animate-pulse-strong {
+  animation: pulse-strong 1.8s ease-in-out infinite;
+}
+
+@keyframes ping-dot {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-ping-dot {
+  animation: ping-dot 1.5s ease-in-out infinite;
+}

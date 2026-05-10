@@ -4,7 +4,36 @@ import { sanitizeSearch } from "@/lib/sanitize";
 import Link from "next/link";
 import { NotificationBell } from "@/components/NotificationBell";
 import { StatusBadge } from "@/components/StatusBadge";
+import { DeleteSupplierButton } from "@/components/DeleteSupplierButton";
+import { HeaderActions } from "@/components/HeaderActions";
 import type { SupplierStatus } from "@/lib/types";
+
+// Returns the current actionable task for a supplier and whether it's urgent (needs admin attention)
+function getCurrentTask(supplier: any): { label: string; urgent: boolean } {
+  if (supplier.status === "not_approved") {
+    return { label: "Rejected", urgent: false };
+  }
+
+  const stage = supplier.current_stage;
+
+  // After Stage 1 form submitted - admin needs to send Stage 2 link (urgent action needed!)
+  if (stage === "form_1" || stage === "form_2") {
+    return { label: "Send Stage 2 link", urgent: true };
+  }
+
+  // After Stage 2 form submitted - admin needs to send Stage 3 link (urgent!)
+  if (stage === "form_3") {
+    return { label: "Send Stage 3 link", urgent: true };
+  }
+
+  // After Stage 3 form submitted - tasks created, but maybe none claimed yet
+  if (stage === "stage_1" || stage === "stage_2" || stage === "stage_3" || stage === "stage_4" || stage === "stage_5") {
+    const stageNum = stage.replace("stage_", "");
+    return { label: `Stage ${stageNum} in progress`, urgent: false };
+  }
+
+  return { label: "Pending", urgent: false };
+}
 
 interface PageProps {
   searchParams: { status?: string; page?: string; q?: string };
@@ -56,13 +85,10 @@ export default async function InProgress({ searchParams }: PageProps) {
     <div>
       <div className="flex justify-between items-center mb-5">
         <div>
-          <h1 className="text-[24px] font-semibold tracking-[-0.5px] text-text-primary mb-1">In Progress</h1>
-          <p className="text-[12px] text-text-muted">{totalInProgress.toLocaleString()} suppliers still in workflow</p>
+          <h1 className="text-[24px] font-semibold tracking-[-0.5px] text-text-primary mb-1">Tasks</h1>
+          <p className="text-[12px] text-text-muted">{totalInProgress.toLocaleString()} suppliers awaiting action</p>
         </div>
-        <div className="flex gap-2.5 items-center">
-          <NotificationBell userId={user.id} />
-          <button className="btn btn-secondary"><i className="ti ti-download" aria-hidden /> Export</button>
-        </div>
+        <HeaderActions userId={user.id} showTasksButton={false} />
       </div>
 
       <div className="flex gap-1 bg-white p-1 rounded-ios mb-3 w-fit border border-border">
@@ -94,8 +120,8 @@ export default async function InProgress({ searchParams }: PageProps) {
               <th>Company</th>
               <th>Contact</th>
               <th>Country</th>
-              <th>Stage</th>
-              <th>Status</th>
+              <th>Current Task</th>
+              <th className="w-12"></th>
             </tr>
           </thead>
           <tbody>
@@ -107,32 +133,46 @@ export default async function InProgress({ searchParams }: PageProps) {
                       <i className="ti ti-progress text-[24px] text-amber-icon" aria-hidden />
                     </div>
                     <div>
-                      <p className="text-[14px] font-medium text-text-secondary">No suppliers in progress</p>
+                      <p className="text-[14px] font-medium text-text-secondary">No active tasks</p>
                       <p className="text-[12px] text-text-muted mt-0.5">New supplier registrations will appear here</p>
                     </div>
                   </div>
                 </td>
               </tr>
             )}
-            {(suppliers || []).map((s: any) => (
-              <tr key={s.id}>
-                <td>
-                  <Link href={`/suppliers/${s.id}`} className="flex items-center gap-3 -m-1 p-1">
-                    <div className={`avatar ${s.status === "not_approved" ? "bg-red-soft text-red-text" : "bg-amber-soft text-amber-text"}`}>
-                      {(s.company_name || s.reference_code).charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <div className="font-medium text-[14px] text-text-primary">{s.company_name || s.reference_code}</div>
-                      <div className="text-[12px] text-text-muted mt-0.5">{s.reference_code}</div>
-                    </div>
-                  </Link>
-                </td>
-                <td className="text-text-secondary">{s.contact_name || "—"}</td>
-                <td>{s.country === "China" ? "🇨🇳 China" : s.country === "Israel" ? "🇮🇱 Israel" : "—"}</td>
-                <td><span className="stage-tag">{s.current_stage.toUpperCase().replace("_", " ")}</span></td>
-                <td><StatusBadge status={s.status} /></td>
-              </tr>
-            ))}
+            {(suppliers || []).map((s: any) => {
+              const task = getCurrentTask(s);
+              return (
+                <tr key={s.id}>
+                  <td>
+                    <Link href={`/suppliers/${s.id}`} className="flex items-center gap-3 -m-1 p-1">
+                      <div className={`avatar ${s.status === "not_approved" ? "bg-red-soft text-red-text" : "bg-amber-soft text-amber-text"}`}>
+                        {(s.company_name || s.reference_code).charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-medium text-[14px] text-text-primary">{s.company_name || s.reference_code}</div>
+                        <div className="text-[12px] text-text-muted mt-0.5">{s.reference_code}</div>
+                      </div>
+                    </Link>
+                  </td>
+                  <td className="text-text-secondary">{s.contact_name || "—"}</td>
+                  <td>{s.country === "China" ? "🇨🇳 China" : s.country === "Israel" ? "🇮🇱 Israel" : "—"}</td>
+                  <td>
+                    <Link href={`/suppliers/${s.id}`} className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold ${task.urgent ? "bg-red-soft text-red-text animate-pulse-strong" : "bg-amber-soft text-amber-text"}`}>
+                      <span className={`w-2 h-2 rounded-full ${task.urgent ? "bg-red" : "bg-amber"} ${task.urgent ? "animate-ping-dot" : ""}`} />
+                      {task.label}
+                    </Link>
+                  </td>
+                  <td>
+                    <DeleteSupplierButton
+                      supplierId={s.id}
+                      supplierName={s.company_name || s.reference_code}
+                      variant="icon"
+                    />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 

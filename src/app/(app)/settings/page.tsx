@@ -1,18 +1,22 @@
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase-server";
+import { HeaderActions } from "@/components/HeaderActions";
 import { SettingsForm } from "./SettingsForm";
 
 export default async function Settings() {
-  await requireAdmin();
+  const me = await requireAdmin();
   const supabase = createClient();
   const { data: settings } = await supabase.from("settings").select("*").single();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://your-app.vercel.app";
 
   return (
     <div>
-      <div className="mb-5">
-        <h1 className="text-2xl font-semibold tracking-tight text-text-primary mb-0.5">Settings</h1>
-        <p className="text-xs text-text-muted">Configure system preferences</p>
+      <div className="flex justify-between items-center mb-5">
+        <div>
+          <h1 className="text-[24px] font-semibold tracking-[-0.5px] text-text-primary mb-1">Settings</h1>
+          <p className="text-[12px] text-text-muted">Configure system preferences</p>
+        </div>
+        <HeaderActions userId={me.id} />
       </div>
       <div className="max-w-[600px]">
         <div className="card mb-3">

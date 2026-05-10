@@ -58,19 +58,13 @@ function getGreeting(firstName: string, hour: number): { greeting: string; emoji
   return { greeting: `Good evening, ${firstName}`, emoji: "🌙" };
 }
 
-function formatDateTime(date: Date): { date: string; time: string } {
+function formatDateTime(date: Date): { date: string } {
   const dateStr = date.toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
-  const timeStr = date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
-  return { date: dateStr, time: timeStr };
+  return { date: dateStr };
 }
 
 export function GreetingHeader({ fullName, taskCount }: GreetingHeaderProps) {
@@ -82,22 +76,18 @@ export function GreetingHeader({ fullName, taskCount }: GreetingHeaderProps) {
     taskCount === 0 ? pickRandom(motivationalMessages.noTasks) : pickRandom(motivationalMessages.withTasks)
   );
 
-  // Update every second
+  // Update every minute (enough to keep greeting in sync with time of day)
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
+    const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
   const { greeting, emoji } = getGreeting(firstName, now.getHours());
-  const { date, time } = formatDateTime(now);
+  const { date } = formatDateTime(now);
 
   return (
     <div>
-      <div className="flex items-baseline gap-2 mb-1.5">
-        <p className="text-[12px] text-text-muted font-medium uppercase tracking-[1.2px]">{date}</p>
-        <span className="text-[12px] text-text-muted">·</span>
-        <p className="text-[12px] text-accent font-mono font-semibold tracking-tight">{time}</p>
-      </div>
+      <p className="text-[12px] text-text-muted font-medium uppercase tracking-[1.2px] mb-1.5">{date}</p>
       <h1 className="text-[28px] font-semibold tracking-[-0.6px] text-text-primary">
         {greeting} <span className="text-[24px]">{emoji}</span>
       </h1>

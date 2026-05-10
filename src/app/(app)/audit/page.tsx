@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase-server";
 import { sanitizeSearch } from "@/lib/sanitize";
-import { NotificationBell } from "@/components/NotificationBell";
+import { HeaderActions } from "@/components/HeaderActions";
 
 interface PageProps { searchParams: { from?: string; to?: string; q?: string }; }
 
@@ -24,13 +24,10 @@ export default async function AuditLog({ searchParams }: PageProps) {
     <div>
       <div className="flex justify-between items-center mb-5">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary mb-0.5">Audit Log</h1>
-          <p className="text-xs text-text-muted">Complete record of every system action · Immutable</p>
+          <h1 className="text-[24px] font-semibold tracking-[-0.5px] text-text-primary mb-1">Audit Log</h1>
+          <p className="text-[12px] text-text-muted">Complete record of every system action · Immutable</p>
         </div>
-        <div className="flex gap-2 items-center">
-          <NotificationBell userId={me.id} />
-          <button className="btn btn-secondary"><i className="ti ti-download" aria-hidden /> Export</button>
-        </div>
+        <HeaderActions userId={me.id} />
       </div>
 
       <div className="panel">

@@ -30,8 +30,7 @@ export function Sidebar({ user }: SidebarProps) {
 
   const adminItems = [
     { href: "/dashboard", icon: "ti-layout-grid", label: "Dashboard" },
-    { href: "/tasks", icon: "ti-list-check", label: "Tasks", count: counts.tasks },
-    { href: "/in-progress", icon: "ti-progress", label: "In Progress", count: counts.inProgress },
+    { href: "/in-progress", icon: "ti-list-check", label: "Tasks", count: counts.inProgress },
     { href: "/suppliers", icon: "ti-package", label: "Suppliers", count: counts.approved },
   ];
   const adminSubItems = [

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { NotificationBell } from "@/components/NotificationBell";
 import { StatusBadge } from "@/components/StatusBadge";
+import { DeleteSupplierButton } from "@/components/DeleteSupplierButton";
+import { HeaderActions } from "@/components/HeaderActions";
 import { SupplierActions } from "./Actions";
 import { EvaluationForm } from "./EvaluationForm";
 import { NotesPanel } from "./NotesPanel";
@@ -45,24 +47,66 @@ export default async function SupplierDetail({ params }: { params: { id: string 
   }
   const notes = (notesRaw || []).map((n: any) => ({ ...n, author: { full_name: authorsMap[n.author_id] || "—" } }));
 
-  const { data: timeline } = await supabase.from("audit_log").select("*").eq("entity_type", "supplier").eq("entity_id", supplier.id).order("created_at").limit(50);
-
   return (
     <div>
       <div className="text-xs text-text-muted mb-2">
-        <Link href="/suppliers" className="text-accent hover:underline">← Suppliers</Link> / {supplier.company_name}
+        <Link href={supplier.status === "approved" ? "/suppliers" : "/in-progress"} className="text-accent hover:underline">
+          ← {supplier.status === "approved" ? "Suppliers" : "In Progress"}
+        </Link> / {supplier.company_name || supplier.reference_code}
       </div>
 
       <div className="flex justify-between items-start gap-3 mb-5">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary mb-1">{supplier.company_name || supplier.reference_code}</h1>
-          <p className="text-xs text-text-muted flex items-center gap-2">
-            <span className="font-mono">{supplier.reference_code}</span> · {supplier.country === "China" ? "🇨🇳 China" : supplier.country === "Israel" ? "🇮🇱 Israel" : "—"} · <StatusBadge status={supplier.status} />
+          <h1 className="text-2xl font-semibold tracking-tight text-text-primary mb-1">
+            {supplier.company_name || supplier.contact_name || supplier.reference_code}
+          </h1>
+          <p className="text-xs text-text-muted flex items-center gap-2 flex-wrap">
+            <span className="font-mono">{supplier.reference_code}</span>
+            <span className="text-text-subtle">·</span>
+            <span>{supplier.country === "China" ? "🇨🇳 China" : supplier.country === "Israel" ? "🇮🇱 Israel" : "—"}</span>
+            <span className="text-text-subtle">·</span>
+            <StatusBadge status={supplier.status} />
+            {supplier.status === "approved" && supplier.approved_at && (
+              <>
+                <span className="text-text-subtle">·</span>
+                <span className="flex items-center gap-1">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-icon" aria-hidden>
+                    <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
+                    <path d="M16 3v4" />
+                    <path d="M8 3v4" />
+                    <path d="M4 11h16" />
+                    <path d="M11 15h1" />
+                    <path d="M12 15v3" />
+                  </svg>
+                  Approved on {new Date(supplier.approved_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                </span>
+              </>
+            )}
+            {supplier.status === "not_approved" && supplier.rejected_at && (
+              <>
+                <span className="text-text-subtle">·</span>
+                <span className="flex items-center gap-1 text-red-text">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M18 6l-12 12" />
+                    <path d="M6 6l12 12" />
+                  </svg>
+                  Rejected on {new Date(supplier.rejected_at).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                </span>
+              </>
+            )}
           </p>
         </div>
         <div className="flex gap-2 items-center">
-          <NotificationBell userId={user.id} />
           <SupplierActions supplier={supplier} />
+          <DeleteSupplierButton
+            supplierId={supplier.id}
+            supplierName={supplier.company_name || supplier.reference_code}
+            variant="button"
+            redirectTo={supplier.status === "approved" ? "/suppliers" : "/in-progress"}
+          />
+          <div className="ml-2 pl-2 border-l border-border">
+            <HeaderActions userId={user.id} />
+          </div>
         </div>
       </div>
 
@@ -70,40 +114,63 @@ export default async function SupplierDetail({ params }: { params: { id: string 
 
       <div className="grid grid-cols-[1.5fr_1fr] gap-3.5 mt-3.5">
         <div>
+          {/* Stage 1 Form - Initial Contact */}
           <div className="card mb-3">
-            <div className="text-sm font-semibold mb-3 pb-2 border-b border-border flex items-center gap-2">
-              <i className="ti ti-history text-accent" aria-hidden /> Timeline
-            </div>
-            <div className="relative pl-6">
-              <div className="absolute left-[7px] top-1.5 bottom-1.5 w-px bg-border" />
-              {(timeline || []).length === 0 && <div className="text-xs text-text-muted">No events yet</div>}
-              {(timeline || []).map((e: any) => (
-                <div key={e.id} className="relative pb-3.5 last:pb-0">
-                  <div className="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-green-soft border-2 border-white flex items-center justify-center">
-                    <i className="ti ti-check text-[9px] text-green-text" aria-hidden />
-                  </div>
-                  <div className="text-xs font-medium text-text-primary">{e.action.replace(/\./g, " ").replace(/_/g, " ")}</div>
-                  <div className="text-[11px] text-text-muted mt-0.5">
-                    {new Date(e.created_at).toLocaleString()} · by {e.actor_label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="text-sm font-semibold mb-3 pb-2 border-b border-border flex items-center gap-2">
-              <i className="ti ti-user text-accent" aria-hidden /> Contact & Business
+            <div className="text-sm font-semibold mb-3 pb-2 border-b border-border flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-accent-soft text-accent text-[10px] font-bold flex items-center justify-center">1</span>
+                Initial Contact
+              </span>
+              <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium">Stage 1</span>
             </div>
             <Row label="Contact" value={supplier.contact_name} />
             <Row label="Email" value={supplier.email} mono />
             <Row label="Phone" value={supplier.phone} mono />
-            <Row label="Business No." value={supplier.business_number} mono />
-            <Row label="Location" value={supplier.company_location} />
-            <Row label="Factory" value={supplier.factory_address} />
-            <Row label="Product" value={supplier.product_type} />
-            <Row label="Capacity" value={supplier.production_quantity} />
+            <Row label="Company" value={supplier.company_name} />
           </div>
+
+          {/* Stage 2 Form - Company Details */}
+          {(supplier.business_number || supplier.company_location || supplier.factory_address) && (
+            <div className="card mb-3">
+              <div className="text-sm font-semibold mb-3 pb-2 border-b border-border flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-amber-soft text-amber-text text-[10px] font-bold flex items-center justify-center">2</span>
+                  Company Details
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium">Stage 2</span>
+              </div>
+              <Row label="Business No." value={supplier.business_number} mono />
+              <Row label="Location" value={supplier.company_location} />
+              <Row label="Factory" value={supplier.factory_address} />
+            </div>
+          )}
+
+          {/* Stage 3 Form - Production */}
+          {(supplier.product_type || supplier.production_quantity) && (
+            <div className="card mb-3">
+              <div className="text-sm font-semibold mb-3 pb-2 border-b border-border flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-green-soft text-green-text text-[10px] font-bold flex items-center justify-center">3</span>
+                  Production
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-text-muted font-medium">Stage 3</span>
+              </div>
+              <Row label="Product" value={supplier.product_type} />
+              <Row label="Capacity" value={supplier.production_quantity} />
+            </div>
+          )}
+
+          {/* Hint if some forms not submitted yet */}
+          {!supplier.business_number && !supplier.company_location && !supplier.factory_address && (
+            <div className="text-[12px] text-text-muted bg-bg-elevated rounded-ios p-3 mb-3 flex items-start gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 flex-shrink-0 text-text-secondary" aria-hidden>
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>Send the supplier the Stage 2 link to collect company details.</span>
+            </div>
+          )}
         </div>
 
         <div>
