@@ -74,22 +74,6 @@ export function FollowUpTasksPanel({ supplierId, tasks: initialTasks }: FollowUp
     }
   };
 
-  const deleteTask = async (id: string) => {
-    if (!confirm("Delete this task?")) return;
-    try {
-      const res = await fetch(`/api/follow-up-tasks/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const err = await res.json();
-        alert(err.error || "Failed");
-        return;
-      }
-      setTasks(tasks.filter((t) => t.id !== id));
-      router.refresh();
-    } catch (e: any) {
-      alert(e.message);
-    }
-  };
-
   return (
     <div className="card mb-3">
       <div className="text-sm font-semibold mb-3 pb-2 border-b border-border flex items-center justify-between gap-2">
@@ -163,7 +147,7 @@ export function FollowUpTasksPanel({ supplierId, tasks: initialTasks }: FollowUp
       {openTasks.map((task) => (
         <div
           key={task.id}
-          className="flex items-start gap-2.5 py-2.5 px-3 mb-1.5 bg-red-soft/40 border border-red/20 rounded-ios animate-pulse-soft group"
+          className="flex items-start gap-2.5 py-2.5 px-3 mb-1.5 bg-red-soft/40 border border-red/20 rounded-ios animate-pulse-soft"
         >
           <button
             onClick={() => completeTask(task.id)}
@@ -181,19 +165,6 @@ export function FollowUpTasksPanel({ supplierId, tasks: initialTasks }: FollowUp
               Added {new Date(task.created_at).toLocaleDateString()} {task.created_by_label ? `by ${task.created_by_label}` : ""}
             </div>
           </div>
-          <button
-            onClick={() => deleteTask(task.id)}
-            title="Delete"
-            className="opacity-0 group-hover:opacity-100 w-6 h-6 rounded hover:bg-red-soft flex items-center justify-center transition-opacity flex-shrink-0"
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-muted hover:text-red" aria-hidden>
-              <path d="M4 7l16 0" />
-              <path d="M10 11l0 6" />
-              <path d="M14 11l0 6" />
-              <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-              <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-            </svg>
-          </button>
         </div>
       ))}
 
